@@ -36,6 +36,7 @@ void ofxTuioClient::connect(int port){
 		ofLogError("Could not connect TUIO Client");
 	} else {
 	    bIsConnected = true;	
+		ofAddListener(ofEvents().update, this, &ofxTuioClient::_update);//Call update on the TuioClient so that touc hevents are passed on. 
 	}
 	
 }
@@ -56,7 +57,7 @@ void ofxTuioClient::drawCursors(){
 	client->lockCursorList();
 	for (tit=cursorList.begin(); tit != cursorList.end(); tit++) {
 		TuioCursor * cur = (*tit);
-		//if(tcur!=0){
+		if(cur!= nullptr){
 			//TuioCursor cur = *tcur;
 			ofSetColor(0.0,0.0,0.0);
 			ofEllipse(cur->getX()*ofGetWidth(), cur->getY()*ofGetHeight(), 10.0, 10.0);
@@ -64,7 +65,10 @@ void ofxTuioClient::drawCursors(){
 			ofDrawBitmapString(str, cur->getX()*ofGetWidth()-10.0, cur->getY()*ofGetHeight()+25.0);
 			str = "CursorId: "+ofToString((int)(cur->getCursorID()));
 			ofDrawBitmapString(str, cur->getX()*ofGetWidth()-10.0, cur->getY()*ofGetHeight()+40.0);
-		//}
+		}
+		else {
+			cout << "Error nullptr try" << endl;
+		}
 	}
 	client->unlockCursorList();
 	ofPopStyle();
@@ -94,7 +98,7 @@ void ofxTuioClient::drawObjects(){
 	ofPopStyle();
 }
 
-void ofxTuioClient::update(){
+void ofxTuioClient::_update( ofEventArgs & args ){
 	TuioObject tobj;
 	while(objectAddedQueue.tryReceive(tobj)){
 		ofNotifyEvent(objectAdded, tobj, this);

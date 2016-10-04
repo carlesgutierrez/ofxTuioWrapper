@@ -42,7 +42,10 @@ public:
 	~ofxTuioClient() {
 		disconnect();
 	}
-	void update();
+	//void update();
+
+	void _update(ofEventArgs & args);
+
 	void connect(int _port);
 	void disconnect();
 	

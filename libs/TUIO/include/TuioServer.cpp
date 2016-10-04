@@ -20,7 +20,11 @@
 */
 
 #include "TuioServer.h"
-#include "unistd.h"
+
+
+#ifndef WIN32
+ #include <unistd.h>
+#endif
 
 using namespace TUIO;
 using namespace osc;
@@ -31,7 +35,7 @@ static void* ThreadFunc( void* obj )
 static DWORD WINAPI ThreadFunc( LPVOID obj )
 #endif
 {
-	TuioServer *tuioServer = static_cast<TuioServer*>(obj);
+    TuioServer *tuioServer = static_cast<TuioServer*>(obj);
 	while ((tuioServer->isConnected()) && (tuioServer->periodicMessagesEnabled())) {
 		tuioServer->sendFullMessages();
 #ifndef WIN32
@@ -50,7 +54,7 @@ void TuioServer::enablePeriodicMessages(int interval) {
 	periodic_update = true;
 	
 #ifndef WIN32
-	pthread_create(&thread , NULL, ThreadFunc, this);
+	pthread_create(&thread , nullptr, ThreadFunc, this);
 #else
 	DWORD threadId;
 	thread = CreateThread( 0, 0, ThreadFunc, this, 0, &threadId );
@@ -64,7 +68,7 @@ void TuioServer::disablePeriodicMessages() {
 #ifdef WIN32
 	if( thread ) CloseHandle( thread );
 #endif
-	thread = NULL;	
+    thread = NULL;//nullptr (error on linux : not allowed to transform nullptr_t’ to ‘pthread_t
 }
 
 void TuioServer::sendFullMessages() {
@@ -182,7 +186,7 @@ void TuioServer::initialize(const char *host, int port, int size) {
 		fullPacket = new osc::OutboundPacketStream(fullBuffer,size);
 	} catch (std::exception &e) { 
 		std::cout << "could not create socket" << std::endl;
-		socket = NULL;
+		socket = nullptr;
 	}
 	
 	currentFrameTime = TuioTime::getSessionTime().getSeconds();
@@ -225,7 +229,7 @@ TuioObject* TuioServer::addTuioObject(int f_id, float x, float y, float a) {
 }
 
 void TuioServer::addExternalTuioObject(TuioObject *tobj) {
-	if (tobj==NULL) return;
+	if (tobj== nullptr) return;
 	objectList.push_back(tobj);
 	updateObject = true;
 	
@@ -234,7 +238,7 @@ void TuioServer::addExternalTuioObject(TuioObject *tobj) {
 }
 
 void TuioServer::updateTuioObject(TuioObject *tobj, float x, float y, float a) {
-	if (tobj==NULL) return;
+	if (tobj== nullptr) return;
 	if (tobj->getTuioTime()==currentFrameTime) return;
 	tobj->update(currentFrameTime,x,y,a);
 	updateObject = true;
@@ -245,7 +249,7 @@ void TuioServer::updateTuioObject(TuioObject *tobj, float x, float y, float a) {
 }
 
 void TuioServer::updateExternalTuioObject(TuioObject *tobj) {
-	if (tobj==NULL) return;
+	if (tobj== nullptr) return;
 	updateObject = true;
 	if (verbose && tobj->isMoving())	
 		std::cout << "set obj " << tobj->getSymbolID() << " (" << tobj->getSessionID() << ") "<< tobj->getX() << " " << tobj->getY() << " " << tobj->getAngle() 
@@ -253,7 +257,7 @@ void TuioServer::updateExternalTuioObject(TuioObject *tobj) {
 }
 
 void TuioServer::removeTuioObject(TuioObject *tobj) {
-	if (tobj==NULL) return;
+	if (tobj== nullptr) return;
 	objectList.remove(tobj);
 	delete tobj;
 	updateObject = true;
@@ -263,7 +267,7 @@ void TuioServer::removeTuioObject(TuioObject *tobj) {
 }
 
 void TuioServer::removeExternalTuioObject(TuioObject *tobj) {
-	if (tobj==NULL) return;
+	if (tobj== nullptr) return;
 	objectList.remove(tobj);
 	updateObject = true;
 	
@@ -299,7 +303,7 @@ TuioCursor* TuioServer::addTuioCursor(float x, float y) {
 }
 
 void TuioServer::addExternalTuioCursor(TuioCursor *tcur) {
-	if (tcur==NULL) return;
+	if (tcur== nullptr) return;
 	cursorList.push_back(tcur);
 	updateCursor = true;
 	
@@ -308,7 +312,7 @@ void TuioServer::addExternalTuioCursor(TuioCursor *tcur) {
 }
 
 void TuioServer::updateTuioCursor(TuioCursor *tcur,float x, float y) {
-	if (tcur==NULL) return;
+	if (tcur== nullptr) return;
 	if (tcur->getTuioTime()==currentFrameTime) return;
 	tcur->update(currentFrameTime,x,y);
 	updateCursor = true;
@@ -319,7 +323,7 @@ void TuioServer::updateTuioCursor(TuioCursor *tcur,float x, float y) {
 }
 
 void TuioServer::updateExternalTuioCursor(TuioCursor *tcur) {
-	if (tcur==NULL) return;
+	if (tcur== nullptr) return;
 	updateCursor = true;
 	if (verbose && tcur->isMoving())		
 		std::cout << "set cur " << tcur->getCursorID() << " (" <<  tcur->getSessionID() << ") " << tcur->getX() << " " << tcur->getY() 
@@ -327,7 +331,7 @@ void TuioServer::updateExternalTuioCursor(TuioCursor *tcur) {
 }
 
 void TuioServer::removeTuioCursor(TuioCursor *tcur) {
-	if (tcur==NULL) return;
+	if (tcur== nullptr) return;
 	cursorList.remove(tcur);
 	tcur->remove(currentFrameTime);
 	updateCursor = true;
@@ -367,7 +371,7 @@ void TuioServer::removeTuioCursor(TuioCursor *tcur) {
 }
 
 void TuioServer::removeExternalTuioCursor(TuioCursor *tcur) {
-	if (tcur==NULL) return;
+	if (tcur== nullptr) return;
 	cursorList.remove(tcur);
 	updateCursor = true;
 	
@@ -509,19 +513,19 @@ TuioObject* TuioServer::getTuioObject(long s_id) {
 	for (std::list<TuioObject*>::iterator iter=objectList.begin(); iter != objectList.end(); iter++)
 		if((*iter)->getSessionID()==s_id) return (*iter);
 	
-	return NULL;
+	return nullptr;
 }
 
 TuioCursor* TuioServer::getTuioCursor(long s_id) {
 	for (std::list<TuioCursor*>::iterator iter=cursorList.begin(); iter != cursorList.end(); iter++)
 		if((*iter)->getSessionID()==s_id) return (*iter);
 	
-	return NULL;
+	return nullptr;
 }
 
 TuioObject* TuioServer::getClosestTuioObject(float xp, float yp) {
 	
-	TuioObject *closestObject = NULL;
+	TuioObject *closestObject = nullptr;
 	float closestDistance = 1.0f;
 	
 	for (std::list<TuioObject*>::iterator iter=objectList.begin(); iter != objectList.end(); iter++) {
@@ -537,7 +541,7 @@ TuioObject* TuioServer::getClosestTuioObject(float xp, float yp) {
 
 TuioCursor* TuioServer::getClosestTuioCursor(float xp, float yp) {
 
-	TuioCursor *closestCursor = NULL;
+	TuioCursor *closestCursor = nullptr;
 	float closestDistance = 1.0f;
 
 	for (std::list<TuioCursor*>::iterator iter=cursorList.begin(); iter != cursorList.end(); iter++) {

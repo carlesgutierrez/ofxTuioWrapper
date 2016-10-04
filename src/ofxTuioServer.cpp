@@ -76,7 +76,7 @@ void ofxTuioServer::setVerbose(bool _b){
 //send the OSC messages
 void ofxTuioServer::run() {
 	//this is weird, it should actually be something like....
-	tuioServer->stopUntouchedMovingCursors();
+	//tuioServer->stopUntouchedMovingCursors();//removed by: https://github.com/yokecph/ofxTuioWrapper/commit/431c2a45c4834b943638f07245ee873adf073fda
 	tuioServer->commitFrame();
 	currentTime = TuioTime::getSessionTime();
 	tuioServer->initFrame(currentTime);
